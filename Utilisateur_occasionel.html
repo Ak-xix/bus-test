@@ -1,0 +1,324 @@
+<!DOCTYPE html> 
+<html lang="fr"> 
+<head> 
+  <meta charset="UTF-8"/> <!-- Définit l'encodage des caractères (accents, etc.) -->
+  <title>Neufmoutiers Bus - Utilisateur occasionnel</title> <!-- Titre affiché dans l'onglet du navigateur -->
+  <style> 
+    body { font-family: Arial, sans-serif; background: #f0f2ff; margin: 0; padding: 0; } /* Police Arial, fond légèrement bleuté (plus doux que gris), supprime les marges par défaut */
+    
+    /* Barre du haut */
+    .header { background: #1548D4; color: white; padding: 20px; text-align: center; box-shadow: 0 3px 10px rgba(21,72,212,0.3); } /* Fond bleu, texte blanc, centré, légère ombre sous le header */
+    .header h1 { margin: 0; font-size: 32px; letter-spacing: 0.5px; } /* Supprime la marge du h1, taille 32px, légère séparation entre les lettres */
+    .header h1 .brand { font-size: 65px; font-family: 'Georgia', serif; font-weight: 900; letter-spacing: 1px; text-shadow: 0 2px 6px rgba(0,0,0,0.25); } /* Nom de marque très grand (65px), police Georgia élégante, gras maximum, ombre portée sous le texte */
+    .container { max-width: 1300px; margin: 30px auto; padding: 20px; } /* Largeur max 1300px, centré horizontalement avec marge de 30px en haut/bas, espacement intérieur */
+    .top-row { display: flex; align-items: center; justify-content: space-between; gap: 20px; margin-bottom: 20px; } /* Flexbox : aligne le titre et l'alerte sur la même ligne aux deux extrémités */
+    .container h2 { font-size: 55px; margin: 0; } /* Titre de bienvenue très grand (55px), sans marge */
+    .container h3 { font-size: 30px; margin: 30px 0 15px; } /* Sous-titres de section en taille 30px avec marges haut/bas */
+
+    /* Alerte */
+    .alerte { background: #fff8e1; border: 1.5px solid #f59e0b; padding: 16px 20px; border-radius: 10px; display: inline-flex; align-items: center; font-weight: 500; } /* Fond jaune pâle avec bordure orange, coins arrondis, texte semi-gras */
+    
+    /* Cartes */
+    .cartes { display: flex; gap: 25px; margin-bottom: 30px; } /* Flexbox : les 3 cartes côte à côte avec 25px d'espace entre elles */
+    .carte { background: white; padding: 20px; border-radius: 14px; flex: 1; text-align: center; box-shadow: 0 2px 10px rgba(21,72,212,0.08); border: 1px solid #e0e4f5; transition: transform 0.2s, box-shadow 0.2s; } /* Carte blanche, coins plus arrondis, ombre bleue subtile, bordure, animation au survol */
+    .carte:hover { transform: translateY(-3px); box-shadow: 0 6px 18px rgba(21,72,212,0.14); } /* Au survol : remonte légèrement et accentue l'ombre */
+    .carte .gros { font-size: 25px; font-weight: bold; color: #1548D4; } /* Valeur principale de la carte : grande, grasse et bleue */
+    
+    /* Grille : Tableau + Carte Bus */
+    .grille-trajets { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; margin-bottom: 30px; } /* CSS Grid : 2 colonnes de taille égale (1fr chacune) avec 25px d'espace entre elles */
+    
+    /* Tableau */
+    .section-tableau { background: white; padding: 20px; border-radius: 14px; box-shadow: 0 2px 10px rgba(21,72,212,0.08); border: 1px solid #e0e4f5; } /* Bloc blanc avec coins plus arrondis, ombre bleue subtile et bordure */
+    table { width: 100%; border-collapse: collapse; } /* Tableau pleine largeur, collapse supprime les doubles bordures entre cellules */
+    th { background: #1548D4; color: white; padding: 10px 8px; text-align: left; } /* En-têtes : fond bleu, texte blanc, espacement intérieur, aligné à gauche */
+    th:first-child { border-radius: 8px 0 0 0; } /* Arrondi sur le coin supérieur gauche du premier en-tête */
+    th:last-child { border-radius: 0 8px 0 0; } /* Arrondi sur le coin supérieur droit du dernier en-tête */
+    td { padding: 10px 8px; border-bottom: 1px solid #eef0fb; } /* Cellules : espacement intérieur, ligne de séparation bleutée en bas */
+    tbody tr:hover td { background: #f0f2ff; } /* Ligne légèrement colorée au survol */
+    tbody tr:last-child td { border-bottom: none; } /* Supprime la bordure de la dernière ligne */
+  
+    /* Carte du bus */
+    .carte-bus { background: white; padding: 25px; border-radius: 14px; box-shadow: 0 2px 10px rgba(21,72,212,0.08); border: 1px solid #e0e4f5; } /* Bloc blanc avec coins plus arrondis, ombre bleue subtile et bordure */
+    .carte-bus h3 { margin-top: 0; } /* Supprime la marge haute du titre pour qu'il colle au bord du bloc */
+    
+    /* Ligne de bus */
+    .ligne-container { position: relative; margin: 30px 0; } /* Position relative sert de référence pour placer le bus animé à l'intérieur */
+    .rail { height: 8px; background: #1548D4; border-radius: 4px; position: relative; box-shadow: 0 2px 6px rgba(21,72,212,0.3); } /* Barre bleue de 8px de hauteur représentant la route, légère ombre bleue sous le rail */
+    
+    /* Arrêts */
+    .arrets { display: flex; justify-content: space-between; margin-top: -18px; position: relative; } /* Flexbox : arrêts répartis uniformément, margin-top négatif pour remonter et chevaucher le rail */
+    .arret { text-align: center; flex: 1; cursor: pointer; } /* Chaque arrêt est centré, prend la même largeur, curseur main au survol */
+    .arret .point { /* Cercle visuel représentant l'arrêt sur la ligne */
+      width: 35px; height: 35px; /* Taille du cercle : 35x35 pixels */
+      background: white; /* Fond blanc par défaut */
+      border: 5px solid #1548D4; /* Bordure bleue épaisse de 5px */
+      border-radius: 50%; /* border-radius 50% = forme parfaitement ronde */
+      margin: 0 auto 10px; /* Centrage horizontal (auto gauche/droite) + marge de 10px en bas */
+      transition: all 0.2s; /* Toutes les propriétés s'animent en 0.2 secondes au survol */
+    }
+    .arret:hover .point { transform: scale(1.15); } /* Au survol : agrandit le cercle de 15% avec une animation douce */
+    .arret.depart .point { background: #10b981; border-color: #10b981; } /* Arrêt de départ sélectionné : cercle vert (#10b981) */
+    .arret.arrivee .point { background: #ef4444; border-color: #ef4444; } /* Arrêt d'arrivée sélectionné : cercle rouge (#ef4444) */
+    .arret .nom { font-size: 13px; font-weight: bold; color: #333; } /* Nom de l'arrêt affiché sous le cercle : petit, gras, gris foncé */
+    
+    /* Formulaire */
+    .formulaire { margin: 25px 0; } /* Espacement vertical de 25px au-dessus et en dessous du formulaire */
+    .formulaire label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 14px; } /* Label sur sa propre ligne (display:block), gras, petit espace sous lui */
+    select { /* Style appliqué aux deux menus déroulants */
+      width: 100%; /* Prend toute la largeur disponible */
+      padding: 12px; /* Espacement intérieur confortable pour le clic */
+      margin-bottom: 15px; /* Espace de 15px sous chaque menu déroulant */
+      border: 2px solid #dde0f5; /* Bordure bleutée subtile */
+      border-radius: 10px; /* Coins légèrement plus arrondis */
+      font-size: 14px; /* Taille de police lisible */
+      transition: border-color 0.2s; /* Animation douce quand le champ est sélectionné */
+    }
+    select:focus { outline: none; border-color: #1548D4; } /* Bordure bleue quand le menu est sélectionné (focus) */
+    button.btn-calculer { /* Style du bouton bleu "Calculer le trajet" */
+      width: 100%; /* Bouton pleine largeur du conteneur */
+      padding: 14px; /* Grand espacement intérieur pour un bouton facile à cliquer */
+      background: #1548D4; /* Fond bleu de la charte */
+      color: white; /* Texte blanc */
+      border: none; /* Supprime la bordure par défaut des boutons */
+      border-radius: 10px; /* Coins arrondis */
+      font-size: 15px; /* Taille de police légèrement plus grande */
+      font-weight: bold; /* Texte en gras */
+      cursor: pointer; /* Curseur en forme de main pour indiquer que c'est cliquable */
+      transition: background 0.2s, transform 0.2s; /* Animation douce au survol */
+    }
+    button.btn-calculer:hover { background: #0a2d7a; transform: translateY(-1px); } /* Au survol : fond bleu foncé et légère remontée */
+    
+    /* Résultat */
+    .resultat { /* Bloc qui affiche le résultat du calcul, caché par défaut */
+      margin-top: 20px; /* Espace de 20px au-dessus du bloc résultat */
+      padding: 18px; /* Espacement intérieur du bloc */
+      background: #eef1fd; /* Fond bleu très clair */
+      border-left: 5px solid #1548D4; /* Barre bleue décorative sur le bord gauche */
+      border-radius: 10px; /* Coins arrondis */
+      display: none; /* Caché par défaut, rendu visible par JS en ajoutant la classe "show" */
+    }
+    .resultat.show { display: block; } /* Quand JS ajoute la classe "show", display:block rend le bloc visible */
+    .resultat strong { color: #1548D4; } /* Les mots en gras dans le résultat sont colorés en bleu */
+    
+    /* Badge affluence */
+    .badge { /* Style de base commun à tous les badges d'affluence */
+      display: inline-block; /* S'affiche en ligne (comme du texte) mais accepte padding et dimensions */
+      padding: 5px 12px; /* Espacement intérieur : 5px haut/bas, 12px gauche/droite */
+      border-radius: 20px; /* Grand border-radius = forme arrondie en "pilule" */
+      font-size: 13px; /* Petite taille de police */
+      font-weight: bold; /* Texte en gras */
+      margin-left: 8px; /* Petit espace à gauche pour séparer du texte précédent */
+    }
+    .badge-faible { background: #d1fae5; color: #065f46; } /* Badge vert clair avec texte vert foncé = affluence faible */
+    .badge-moyen { background: #fed7aa; color: #92400e; } /* Badge orange clair avec texte orange foncé = affluence moyenne */
+    .badge-eleve { background: #fecaca; color: #991b1b; } /* Badge rouge clair avec texte rouge foncé = affluence élevée */
+    
+    /* Bus animé */
+    .bus-anime { /* Icône 🚎 qui se déplace sur la barre bleue (le rail) */
+      position: absolute; /* Se positionne librement par rapport à son parent (.rail) qui est en position:relative */
+      top: -30px; /* Décalé de 30px vers le haut pour apparaître au-dessus du rail */
+      left: 0%; /* Position de départ : tout à gauche (0%) */
+      font-size: 28px; /* Taille de l'icône bus */
+      transition: left 0.8s ease; /* Quand JS change "left", le bus glisse en 0.8 secondes avec accélération douce */
+    }
+    
+    /* Bouton retour */
+    .btn-retour { /* Style du lien "← Retour à la connexion" stylisé en bouton */
+      display: inline-block; /* Nécessaire pour qu'un lien <a> accepte padding et dimensions */
+      margin-top: 30px; /* Espace de 30px au-dessus du bouton */
+      padding: 18px 40px; /* Grand espacement intérieur : 18px haut/bas, 40px gauche/droite */
+      background: #1548D4; /* Fond bleu */
+      color: white; /* Texte blanc */
+      text-decoration: none; /* Supprime le soulignement par défaut des liens */
+      border-radius: 10px; /* Coins arrondis */
+      font-weight: bold; /* Texte en gras */
+      transition: background 0.2s, transform 0.2s; /* Animation douce au survol */
+    }
+    .btn-retour:hover { background: #0a2d7a; transform: translateY(-1px); } /* Au survol : fond bleu foncé et légère remontée */
+  </style> <!-- Fin des styles CSS -->
+</head> 
+<body> <!-- Début du corps de la page, tout ce qui est visible pour l'utilisateur doit être à l'intérieur de cette balise -->
+
+  <!-- En-tête -->
+  <div class="header"> <!-- Bandeau bleu en haut de la page -->
+    <h1><span class="brand">🚌 Neufmoutiers Bus</span> - Espace Abonné 🎫</h1> <!-- Titre avec le nom de marque stylisé en grand -->
+  </div>
+
+  <!-- Contenu principal -->
+  <div class="container"> <!-- Conteneur central qui limite la largeur et centre tout le contenu -->
+    
+    <div class="top-row"> <!-- Ligne flex : titre de bienvenue à gauche, alerte à droite -->
+      <h2>Hey, Invité(e) 👋</h2> <!-- Titre de bienvenue pour l'utilisateur occasionnel -->
+      <div class="alerte"> <!-- Bloc jaune d'avertissement sur l'expiration -->
+        ⚠️ Votre abonnement expire dans<strong>: 24H</strong> <!-- Texte d'alerte avec la durée en gras -->
+      </div>
+    </div>
+
+    <!-- 3 cartes -->
+    <div class="cartes"> <!-- Ligne de 3 cartes de statistiques côte à côte -->
+      <div class="carte"> <!-- Carte 1 : type de billet -->
+        <div>🎫</div> <!-- Icône billet -->
+        <div class="gros">Journalier</div> <!-- Type de billet affiché en grand et bleu -->
+        <small>Expire en 24H</small> <!-- Durée de validité en petit -->
+      </div>
+      <div class="carte"> <!-- Carte 2 : trajets (non disponible pour les occasionnels) -->
+        <div>🚌</div> <!-- Icône bus -->
+        <div class="gros">❌</div> <!-- Non disponible affiché en grand -->
+        <small>Trajets ce mois</small> <!-- Label descriptif -->
+      </div>
+      <div class="carte"> <!-- Carte 3 : jours restants (non disponible pour les occasionnels) -->
+        <div>📅</div> <!-- Icône calendrier -->
+        <div class="gros">❌</div> <!-- Non disponible affiché en grand -->
+        <small>Jours restants</small> <!-- Label descriptif -->
+      </div>
+    </div>
+
+    <!-- Grille : Tableau + Carte -->
+    <div class="grille-trajets"> <!-- Grille CSS 2 colonnes : tableau à gauche, carte bus à droite -->
+      
+      <!-- Tableau des derniers trajets -->
+      <div class="section-tableau"> <!-- Bloc blanc contenant le tableau -->
+        <h3 style="margin-top: 0;">Derniers trajets</h3> <!-- Titre de section sans marge haute -->
+        <table> <!-- Tableau vide pour les utilisateurs occasionnels -->
+          <tr> <!-- Ligne d'en-têtes du tableau -->
+            <th>Date</th> <!-- Colonne date -->
+            <th>Ligne</th> <!-- Colonne ligne de bus -->
+            <th>Départ → Arrivée</th> <!-- Colonne trajet -->
+            <th>Affluence</th> <!-- Colonne niveau d'affluence -->
+          </tr>
+          <!-- Pas de données : l'utilisateur occasionnel n'a pas d'historique de trajets -->
+        </table>
+      </div>
+
+      <!-- Carte interactive Bus 1 -->
+      <div class="carte-bus"> <!-- Bloc blanc de planification du trajet -->
+        <h3>🚌 Ligne Bus 1 - Planifiez votre trajet</h3> <!-- Titre de la carte interactive -->
+        
+        <!-- Ligne avec arrêts -->
+        <div class="ligne-container"> <!-- Conteneur relatif pour positionner le bus animé -->
+          <div class="rail"> <!-- Barre bleue représentant la route du bus -->
+            <div class="bus-anime" id="busAnime"> 🚎 </div> <!-- Icône bus qui se déplace sur le rail via JS -->
+          </div>
+          <div class="arrets"> <!-- Conteneur de tous les points d'arrêt -->
+            <div class="arret" data-arret="Église"> <!-- Arrêt Église, data-arret permet à JS de l'identifier -->
+              <div class="point"></div> <!-- Cercle visuel de l'arrêt -->
+              <div class="nom">Église</div> <!-- Nom affiché sous le cercle -->
+            </div>
+            <div class="arret" data-arret="Collège"> <!-- Arrêt Collège, data-arret permet à JS de l'identifier -->
+              <div class="point"></div> <!-- Cercle visuel de l'arrêt -->
+              <div class="nom">Collège</div> <!-- Nom affiché sous le cercle -->
+            </div>
+            <div class="arret" data-arret="Gare"> <!-- Arrêt Gare, data-arret permet à JS de l'identifier -->
+              <div class="point"></div> <!-- Cercle visuel de l'arrêt -->
+              <div class="nom">Gare</div> <!-- Nom affiché sous le cercle -->
+            </div>
+            <div class="arret" data-arret="Mairie"> <!-- Arrêt Mairie, data-arret permet à JS de l'identifier -->
+              <div class="point"></div> <!-- Cercle visuel de l'arrêt -->
+              <div class="nom">Mairie</div> <!-- Nom affiché sous le cercle -->
+            </div>
+            <div class="arret" data-arret="Centre-ville"> <!-- Arrêt Centre-ville, data-arret permet à JS de l'identifier -->
+              <div class="point"></div> <!-- Cercle visuel de l'arrêt -->
+              <div class="nom">Centre-ville</div> <!-- Nom affiché sous le cercle -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Formulaire -->
+        <div class="formulaire"> <!-- Bloc du formulaire de sélection de trajet -->
+          <label>Arrêt de départ :</label> <!-- Label du menu départ -->
+          <select id="depart"> <!-- Menu déroulant pour choisir le départ, id="depart" pour que JS le lise -->
+            <option value="">-- Choisir --</option> <!-- Option vide affichée par défaut -->
+            <option value="Église">Église</option> <!-- Option arrêt Église -->
+            <option value="Collège">Collège</option> <!-- Option arrêt Collège -->
+            <option value="Gare">Gare</option> <!-- Option arrêt Gare -->
+            <option value="Mairie">Mairie</option> <!-- Option arrêt Mairie -->
+            <option value="Centre-ville">Centre-ville</option> <!-- Option arrêt Centre-ville -->
+          </select>
+
+          <label>Arrêt d'arrivée :</label> <!-- Label du menu arrivée -->
+          <select id="arrivee"> <!-- Menu déroulant pour choisir l'arrivée, id="arrivee" pour que JS le lise -->
+            <option value="">-- Choisir --</option> <!-- Option vide affichée par défaut -->
+            <option value="Église">Église</option> <!-- Option arrêt Église -->
+            <option value="Collège">Collège</option> <!-- Option arrêt Collège -->
+            <option value="Gare">Gare</option> <!-- Option arrêt Gare -->
+            <option value="Mairie">Mairie</option> <!-- Option arrêt Mairie -->
+            <option value="Centre-ville">Centre-ville</option> <!-- Option arrêt Centre-ville -->
+          </select>
+
+          <button class="btn-calculer" onclick="calculerTrajet()">Calculer le trajet</button> <!-- Bouton qui appelle la fonction JS calculerTrajet() au clic -->
+        </div>
+
+        <!-- Résultat -->
+        <div class="resultat" id="resultat"> <!-- Bloc résultat masqué par défaut, JS lui ajoute la classe "show" pour l'afficher -->
+          <div id="texteResultat"></div> <!-- Zone vide où JS injecte le HTML du résultat (trajet, durée, affluence) -->
+        </div>
+      </div>
+
+    </div>
+
+    <div> <!-- Conteneur du bouton retour -->
+      <a href="index.html" class="btn-retour">← Retour à la connexion</a> <!-- Lien stylisé en bouton qui ramène à la page de connexion -->
+    </div>
+ 
+  </div>
+
+  <script> <!-- Début du bloc JavaScript -->
+    const arrets = ['Église', 'Collège', 'Gare', 'Mairie', 'Centre-ville']; // Liste ordonnée des 5 arrêts de la ligne Bus 1
+    
+    // Affluence aléatoire par trajet
+    const affluences = ['Faible', 'Moyen', 'Élevé']; // Tableau des 3 niveaux d'affluence possibles
+    
+    function calculerTrajet() { // Fonction déclenchée au clic sur le bouton "Calculer le trajet"
+      const depart = document.getElementById('depart').value; // Récupère la valeur sélectionnée dans le menu départ
+      const arrivee = document.getElementById('arrivee').value; // Récupère la valeur sélectionnée dans le menu arrivée
+      const resultatDiv = document.getElementById('resultat'); // Récupère le bloc HTML du résultat pour l'afficher
+      const texteResultat = document.getElementById('texteResultat'); // Récupère la zone où injecter le texte du résultat
+      
+      // Réinitialiser les arrêts
+      document.querySelectorAll('.arret').forEach(a => { // Parcourt tous les éléments ayant la classe "arret"
+        a.classList.remove('depart', 'arrivee'); // Supprime les couleurs vert/rouge des arrêts d'une recherche précédente
+      });
+      
+      if (!depart || !arrivee) { // Vérifie que l'utilisateur a bien sélectionné les deux champs
+        alert('Veuillez sélectionner un départ et une arrivée'); // Affiche une alerte si un champ est vide
+        return; // Arrête l'exécution de la fonction
+      }
+      
+      if (depart === arrivee) { // Vérifie que l'arrêt de départ et d'arrivée sont différents
+        alert('Le départ et l\'arrivée doivent être différents'); // Affiche une alerte si identiques
+        return; // Arrête l'exécution de la fonction
+      }
+      
+      // Calculer positions et trajet
+      const indexDepart = arrets.indexOf(depart); // Trouve la position (index) de l'arrêt de départ dans le tableau
+      const indexArrivee = arrets.indexOf(arrivee); // Trouve la position (index) de l'arrêt d'arrivée dans le tableau
+      const nbArrets = Math.abs(indexArrivee - indexDepart); // Calcule le nombre d'arrêts entre les deux (valeur absolue pour éviter les négatifs)
+      const duree = nbArrets * 3; // 3 min par arrêt // Calcule la durée estimée : 3 minutes par arrêt
+      
+      // Affluence aléatoire
+      const affluence = affluences[Math.floor(Math.random() * affluences.length)]; // Choisit un niveau d'affluence aléatoire dans le tableau
+      let badgeClass = 'badge-moyen'; // Classe CSS du badge par défaut (orange)
+      if (affluence === 'Faible') badgeClass = 'badge-faible'; // Si affluence faible : badge vert
+      if (affluence === 'Élevé') badgeClass = 'badge-eleve'; // Si affluence élevée : badge rouge
+      
+      // Marquer les arrêts
+      document.querySelector(`[data-arret="${depart}"]`).classList.add('depart'); // Ajoute la classe "depart" (vert) sur le point de l'arrêt de départ
+      document.querySelector(`[data-arret="${arrivee}"]`).classList.add('arrivee'); // Ajoute la classe "arrivee" (rouge) sur le point de l'arrêt d'arrivée
+      
+      // Animer le bus
+      const positionBus = (indexArrivee / 4) * 100; // Calcule la position en % du bus : index divisé par 4 (nb d'intervalles entre 5 arrêts)
+      document.getElementById('busAnime').style.left = positionBus + '%'; // Déplace l'icône bus vers la position calculée (déclenche l'animation CSS)
+      
+      // Afficher résultat
+      texteResultat.innerHTML = `
+        <strong>Trajet :</strong> ${depart} → ${arrivee}<br>
+        <strong>Nombre d'arrêts :</strong> ${nbArrets}<br>
+        <strong>Durée estimée :</strong> ${duree} minutes<br>
+        <strong>Affluence actuelle :</strong> <span class="badge ${badgeClass}">${affluence}</span>
+      `; // Injecte dans la page le trajet, le nombre d'arrêts, la durée et le badge d'affluence coloré
+      resultatDiv.classList.add('show'); // Ajoute la classe "show" pour rendre le bloc résultat visible (display:block)
+    }
+  </script> <!-- Fin du bloc JavaScript -->
+
+</body> <!-- Fin du corps de la page -->
+</html> <!-- Fin du document HTML -->

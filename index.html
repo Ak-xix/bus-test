@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Neufmoutiers Bus - Connexion</title>
+  <style>
+    body { 
+      font-family: Arial, sans-serif; 
+      background: linear-gradient(135deg, #1548D4 0%, #0a2d7a 100%); 
+      margin: 0; 
+      padding: 0; 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      min-height: 100vh; 
+    }
+    
+    /* Boîte de connexion */
+    .box { 
+      background: white; 
+      padding: 40px; 
+      border-radius: 15px; 
+      width: 400px; 
+      text-align: center; 
+      box-shadow: 0 10px 40px rgba(0,0,0,0.3); 
+    }
+    
+    /* Logo et titre */
+    .logo { font-size: 50px; margin-bottom: 10px; }
+    h1 { color: #1548D4; font-size: 24px; margin: 0 0 10px 0; }
+    .sous-titre { color: #666; font-size: 14px; margin-bottom: 30px; }
+    
+    /* Formulaire */
+    input { 
+      width: 100%; 
+      padding: 12px; 
+      margin-bottom: 15px; 
+      border: 2px solid #ddd; 
+      border-radius: 8px; 
+      font-size: 14px; 
+      box-sizing: border-box; 
+    }
+    input:focus { border-color: #1548D4; outline: none; }
+    
+    /* Conteneur mot de passe avec œil */
+    .password-container {
+      position: relative;
+      margin-bottom: 15px;
+    }
+    
+    .password-container input {
+      margin-bottom: 0;
+      padding-right: 45px;
+    }
+    
+    .eye-icon {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      cursor: pointer;
+      font-size: 18px;
+      user-select: none;
+    }
+    
+    /* Boutons */
+    button { 
+      width: 100%; 
+      padding: 14px; 
+      margin-bottom: 10px; 
+      border: none; 
+      border-radius: 8px; 
+      font-size: 15px; 
+      font-weight: bold; 
+      cursor: pointer; 
+    }
+    
+    .btn-abonne { background: #1548D4; color: white; }
+    .btn-abonne:hover { background: #0a2d7a; }
+    
+    .btn-ticket { background: #f5f5f5; color: #333; border: 2px solid #ddd; }
+    .btn-ticket:hover { background: #e8e8e8; }
+    
+    /* Séparateur */
+    .separateur { 
+      margin: 20px 0; 
+      color: #999; 
+      font-size: 13px; 
+      position: relative; 
+    }
+    .separateur::before,
+    .separateur::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      width: 40%;
+      height: 1px;
+      background: #ddd;
+    }
+    .separateur::before { left: 0; }
+    .separateur::after { right: 0; }
+
+    /* --- STYLES POUR L'ÉTAPE DE VÉRIFICATION PAR CODE --- */
+
+    /* Cache la boîte de vérification par défaut */
+    #etape-verification {
+      display: none;
+    }
+
+    /* Style du message d'information sous le champ code */
+    .info-code {
+      font-size: 13px;
+      color: #666;
+      margin-bottom: 15px;
+    }
+
+    /* Style du bouton de renvoi du code */
+    .btn-renvoyer {
+      background: none;
+      border: none;
+      color: #1548D4;
+      font-size: 13px;
+      cursor: pointer;
+      text-decoration: underline;
+      padding: 0;
+      margin-bottom: 10px;
+      width: auto;
+    }
+
+    /* Style du bouton de retour à la connexion */
+    .btn-retour-connexion {
+      background: #f5f5f5;
+      color: #333;
+      border: 2px solid #ddd;
+      margin-top: 5px;
+    }
+    .btn-retour-connexion:hover {
+      background: #e8e8e8;
+    }
+
+    /* Message de chargement pendant l'envoi de l'email */
+    #message-envoi {
+      display: none;
+      font-size: 13px;
+      color: #1548D4;
+      margin-bottom: 10px;
+    }
+  </style>
+
+  <!-- Chargement de la librairie EmailJS pour envoyer des emails depuis le navigateur -->
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+</head>
+<body>
+
+  <div class="box">
+    
+    <!-- Logo et titre -->
+    <div class="logo">🚌</div>
+    <h1>Neufmoutiers Bus</h1>
+    <p class="sous-titre">Connectez-vous à votre espace</p>
+
+    <!-- ===== ÉTAPE 1 : Formulaire de connexion classique ===== -->
+    <div id="etape-connexion">
+
+      <!-- Formulaire abonné -->
+      <form onsubmit="seConnecter(event)">
+        <input type="email" placeholder="Adresse e-mail" required>
+        
+        <!-- Champ mot de passe avec œil -->
+        <div class="password-container">
+          <input type="password" id="motdepasse" placeholder="Mot de passe" required>
+          <span class="eye-icon" onclick="afficherMotDePasse()">👁️</span>
+        </div>
+        
+        <button type="submit" class="btn-abonne">Se connecter (Espace Abonné)</button>
+      </form>
+
+      <!-- Séparateur -->
+      <div class="separateur">OU</div>
+
+      <!-- Bouton utilisateur occasionnel -->
+      <button class="btn-ticket" onclick="allerUtilisateurOccasionnel()">
+        Utilisateur occasionnel
+      </button>
+
+      <p style="font-size: 12px; color: #999; margin-top: 20px;">
+        Pas encore d'abonnement ? <a href="Abonnements.html" style="color: #1548D4;">Souscrire à un abonnement</a>
+      </p>
+
+    </div><!-- fin etape-connexion -->
+
+
+    <!-- ===== ÉTAPE 2 : Vérification par code envoyé par email ===== -->
+    <div id="etape-verification">
+
+      <!-- Icône de sécurité -->
+      <div style="font-size: 40px; margin-bottom: 10px;">🔐</div>
+
+      <!-- Titre de l'étape -->
+      <h2 style="color: #1548D4; font-size: 20px; margin-bottom: 5px;">Vérification</h2>
+
+      <!-- Message expliquant que l'email a été envoyé -->
+      <p class="info-code" id="texte-email-envoye">
+        Un code de vérification a été envoyé à votre adresse e-mail.
+      </p>
+
+      <!-- Message affiché pendant l'envoi -->
+      <p id="message-envoi">📨 Envoi du code en cours...</p>
+
+      <!-- Champ pour saisir le code reçu par email -->
+      <input type="text" id="champ-code" placeholder="Entrez le code à 6 chiffres" maxlength="6">
+
+      <!-- Bouton pour valider le code saisi -->
+      <button class="btn-abonne" onclick="verifierCode()">Valider le code</button>
+
+      <!-- Bouton pour renvoyer un nouveau code -->
+      <button class="btn-renvoyer" onclick="renvoyerCode()">🔄 Renvoyer le code</button>
+
+      <!-- Bouton pour revenir à l'étape de connexion -->
+      <button class="btn-retour-connexion" onclick="retourConnexion()">← Retour</button>
+
+    </div><!-- fin etape-verification -->
+
+  </div>
+
+  <script>
+
+  
+    // =====================================================
+    var EMAILJS_PUBLIC_KEY  = "WseFqUbinxUUVys9A";  // Clé publique dans Paramètres > Général
+    var EMAILJS_SERVICE_ID  = "service_9btx3mh";    // ID du service email créé dans Email Services
+    var EMAILJS_TEMPLATE_ID = "template_gsnv9bq";    // ID du template créé dans Email Templates
+    // =====================================================
+    //   {{to_email}}   → adresse email du destinataire
+    //   {{to_name}}    → prénom de l'utilisateur
+    //   {{code}}       → le code de vérification à 6 chiffres
+    // =====================================================
+
+    // Initialisation d'EmailJS avec la clé publique
+    emailjs.init(EMAILJS_PUBLIC_KEY);
+
+    // Variable qui stocke le code généré pour comparer avec la saisie
+    var codeEnvoye = "";
+
+    // Variable qui mémorise le prénom de l'utilisateur connecté
+    var prenomUtilisateur = "";
+
+    // Variable qui mémorise l'email de l'utilisateur connecté
+    var emailUtilisateur = "";
+
+    // Liste des utilisateurs autorisés avec leur email, mot de passe et prénom
+    const utilisateurs = {
+      "shabipraba@gmail.com":             { motdepasse: "bus_9moutiers", prenom: "Shabi" },
+      "martin.ferreira2006@gmail.com":    { motdepasse: "projet2025", prenom: "Martin" },
+      "alexandrerousseau0911@gmail.com":  { motdepasse: "bus_9moutiers", prenom: "Alexandre" },
+      "aminekhorsi75@gmail.com":          { motdepasse: "Ak75019+", prenom: "Amine" },
+      "professeur75019@gmail.com":        { motdepasse: "professeur19", prenom: "Professeur" },
+    };
+
+    // Fonction pour afficher/masquer le mot de passe
+    function afficherMotDePasse() {
+      var champMotDePasse = document.getElementById("motdepasse");
+      var icone = document.querySelector(".eye-icon");
+      
+      if (champMotDePasse.type === "password") {
+        champMotDePasse.type = "text";
+        icone.textContent = "🙈";
+      } else {
+        champMotDePasse.type = "password";
+        icone.textContent = "👁️";
+      }
+    }
+    
+    // Fonction de connexion abonné
+    function seConnecter(event) {
+      event.preventDefault();
+      // Récupère l'email saisi (en minuscules pour éviter les erreurs de casse)
+      var email = document.querySelector('input[type="email"]').value.trim().toLowerCase();
+      // Récupère le mot de passe saisi
+      var motdepasse = document.getElementById("motdepasse").value;
+
+      // Vérifie si l'email existe dans la liste et si le mot de passe est correct
+      if (utilisateurs[email] && utilisateurs[email].motdepasse === motdepasse) {
+        // Sauvegarde le prénom dans le sessionStorage pour l'utiliser sur la page suivante
+        sessionStorage.setItem("prenom", utilisateurs[email].prenom);
+
+        // Mémorise le prénom et l'email pour l'étape de vérification
+        prenomUtilisateur = utilisateurs[email].prenom;
+        emailUtilisateur = email;
+
+        // Lance l'envoi du code de vérification par email
+        envoyerCodeVerification();
+
+      } else {
+        // Affiche une erreur si email ou mot de passe incorrect
+        alert("Email ou mot de passe incorrect. Accès refusé.");
+      }
+    }
+
+    // ---- NOUVELLES FONCTIONS POUR LA VÉRIFICATION PAR CODE ----
+
+    // Génère un code aléatoire à 6 chiffres
+    function genererCode() {
+      // Math.random() donne un nombre entre 0 et 1, multiplié par 900000 + 100000 = entre 100000 et 999999
+      return String(Math.floor(100000 + Math.random() * 900000));
+    }
+
+    // Envoie le code de vérification par email via EmailJS
+    function envoyerCodeVerification() {
+      // Génère un nouveau code aléatoire
+      codeEnvoye = genererCode();
+
+      // Affiche l'étape de vérification et cache l'étape de connexion
+      document.getElementById("etape-connexion").style.display = "none";
+      document.getElementById("etape-verification").style.display = "block";
+
+      // Affiche le message de chargement pendant l'envoi
+      document.getElementById("message-envoi").style.display = "block";
+
+      // Prépare les paramètres à envoyer dans le template EmailJS
+      var parametresEmail = {
+        to_email: emailUtilisateur,  // Adresse email du destinataire
+        to_name: prenomUtilisateur,  // Prénom affiché dans l'email
+        code: codeEnvoye             // Code de vérification à 6 chiffres
+      };
+
+      // Envoie l'email via EmailJS avec le service et template configurés
+      emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, parametresEmail)
+        .then(function() {
+          // Cache le message de chargement quand l'envoi est réussi
+          document.getElementById("message-envoi").style.display = "none";
+
+          // Met à jour le texte pour confirmer l'envoi avec l'adresse masquée
+          document.getElementById("texte-email-envoye").textContent =
+            "Un code a été envoyé à " + masquerEmail(emailUtilisateur) + ". Vérifiez vos e-mails.";
+        })
+        .catch(function(erreur) {
+          // Affiche une erreur si l'envoi échoue
+          document.getElementById("message-envoi").style.display = "none";
+          alert("Erreur lors de l'envoi de l'email. Vérifiez la configuration EmailJS.\n" + erreur.text);
+        });
+    }
+
+    // Masque partiellement l'email pour la confidentialité (ex: sh***@gmail.com)
+    function masquerEmail(email) {
+      // Sépare la partie avant et après le @
+      var parties = email.split("@");
+      var debut = parties[0].substring(0, 2); // Garde les 2 premiers caractères
+      return debut + "***@" + parties[1];     // Remplace le reste par ***
+    }
+
+    // Vérifie que le code saisi correspond au code envoyé
+    function verifierCode() {
+      // Récupère le code tapé par l'utilisateur (sans espaces)
+      var codeSaisi = document.getElementById("champ-code").value.trim();
+
+      // Compare le code saisi avec le code envoyé
+      if (codeSaisi === codeEnvoye) {
+        // Code correct : redirige vers l'espace abonné
+        window.location.href = "Espace_abonne.html";
+      } else {
+        // Code incorrect : affiche un message d'erreur
+        alert("Code incorrect. Veuillez réessayer.");
+
+        // Vide le champ pour que l'utilisateur recommence
+        document.getElementById("champ-code").value = "";
+      }
+    }
+
+    // Renvoie un nouveau code en cas de problème de réception
+    function renvoyerCode() {
+      // Vide le champ de saisie du code
+      document.getElementById("champ-code").value = "";
+
+      // Relance l'envoi d'un nouveau code
+      envoyerCodeVerification();
+    }
+
+    // Revient à l'étape de connexion si l'utilisateur veut changer d'identifiants
+    function retourConnexion() {
+      // Remet à zéro le code stocké
+      codeEnvoye = "";
+
+      // Affiche de nouveau le formulaire de connexion
+      document.getElementById("etape-connexion").style.display = "block";
+
+      // Cache l'étape de vérification
+      document.getElementById("etape-verification").style.display = "none";
+    }
+    
+    // Fonction pour utilisateur occasionnel
+    function allerUtilisateurOccasionnel() {
+      window.location.href = "Utilisateur_occasionel.html";
+    }
+  </script> 
+
+</body>
+</html>
