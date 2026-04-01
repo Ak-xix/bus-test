@@ -246,16 +246,7 @@
     var prenomUtilisateur = "";
 
     // Variable qui mémorise l'email de l'utilisateur connecté
-    var emailUtilisateur = "";
-
-    // Liste des utilisateurs autorisés avec leur email, mot de passe et prénom
-    const utilisateurs = {
-      "shabipraba@gmail.com":             { motdepasse: "bus_9moutiers", prenom: "Shabi" },
-      "martin.ferreira2006@gmail.com":    { motdepasse: "projet2025", prenom: "Martin" },
-      "alexandrerousseau0911@gmail.com":  { motdepasse: "bus_9moutiers", prenom: "Alexandre" },
-      "aminekhorsi75@gmail.com":          { motdepasse: "Ak75019+", prenom: "Amine" },
-      "professeur75019@gmail.com":        { motdepasse: "professeur19", prenom: "Professeur" },
-    };
+    var emailUtilisateur = ""; 
 
     // Fonction pour afficher/masquer le mot de passe
     function afficherMotDePasse() {
@@ -272,30 +263,29 @@
     }
     
     // Fonction de connexion abonné
-    function seConnecter(event) {
-      event.preventDefault();
-      // Récupère l'email saisi (en minuscules pour éviter les erreurs de casse)
-      var email = document.querySelector('input[type="email"]').value.trim().toLowerCase();
-      // Récupère le mot de passe saisi
-      var motdepasse = document.getElementById("motdepasse").value;
+   
+function seConnecter(event) {
+    event.preventDefault();
+    var email = document.querySelector('input[type="email"]').value.trim().toLowerCase();
+    var motdepasse = document.getElementById("motdepasse").value;
+    fetch('connexion.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email, motdepasse: motdepasse })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.succes) {
+            sessijava-script.setItem("prenom", data.prenom);
+            prenomUtilisateur = data.prenom;
+            emailUtilisateur = email;
+            envoyerCodeVerification();
+        } else {
+            alert("Email ou mot de passe incorrect.");
+        }
+    });
+}
 
-      // Vérifie si l'email existe dans la liste et si le mot de passe est correct
-      if (utilisateurs[email] && utilisateurs[email].motdepasse === motdepasse) {
-        // Sauvegarde le prénom dans le sessionStorage pour l'utiliser sur la page suivante
-        sessionStorage.setItem("prenom", utilisateurs[email].prenom);
-
-        // Mémorise le prénom et l'email pour l'étape de vérification
-        prenomUtilisateur = utilisateurs[email].prenom;
-        emailUtilisateur = email;
-
-        // Lance l'envoi du code de vérification par email
-        envoyerCodeVerification();
-
-      } else {
-        // Affiche une erreur si email ou mot de passe incorrect
-        alert("Email ou mot de passe incorrect. Accès refusé.");
-      }
-    }
 
     // ---- NOUVELLES FONCTIONS POUR LA VÉRIFICATION PAR CODE ----
 
