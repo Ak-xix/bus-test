@@ -45,7 +45,7 @@
     /* Conteneur mot de passe avec œil */
     .password-container {
       position: relative;
-      margin-bottom: 15px;
+      margin-bottom: 8px;
     }
     
     .password-container input {
@@ -62,6 +62,19 @@
       font-size: 18px;
       user-select: none;
     }
+
+    /* Lien mot de passe oublié : affiché en petit à droite sous le champ mot de passe */
+    .mdp-oublie {
+      display: block;
+      text-align: right;
+      font-size: 12px;
+      color: #1548D4;
+      text-decoration: none;
+      margin-bottom: 15px;
+      margin-top: 4px;
+    }
+    /* Soulignement au survol pour indiquer que c'est cliquable */
+    .mdp-oublie:hover { text-decoration: underline; }
     
     /* Boutons */
     button { 
@@ -171,6 +184,9 @@
           <input type="password" id="motdepasse" placeholder="Mot de passe" required>
           <span class="eye-icon" onclick="afficherMotDePasse()">👁️</span>
         </div>
+
+        <!-- Lien mot de passe oublié : redirige vers la page de réinitialisation -->
+        <a href="reinitialisation.html" class="mdp-oublie">Mot de passe oublié ?</a>
         
         <button type="submit" class="btn-abonne">Se connecter (Espace Abonné)</button>
       </form>
@@ -225,7 +241,6 @@
 
   <script>
 
-  
     // =====================================================
     var EMAILJS_PUBLIC_KEY  = "WseFqUbinxUUVys9A";  // Clé publique dans Paramètres > Général
     var EMAILJS_SERVICE_ID  = "service_9btx3mh";    // ID du service email créé dans Email Services
@@ -263,28 +278,28 @@
     }
     
     // Fonction de connexion abonné
-   
-function seConnecter(event) {
-    event.preventDefault();
-    var email = document.querySelector('input[type="email"]').value.trim().toLowerCase();
-    var motdepasse = document.getElementById("motdepasse").value;
-    fetch('connexion.php', {
+    function seConnecter(event) {
+      event.preventDefault();
+      var email = document.querySelector('input[type="email"]').value.trim().toLowerCase();
+      var motdepasse = document.getElementById("motdepasse").value;
+      fetch('connexion.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: email, motdepasse: motdepasse })
-    })
-    .then(res => res.json())
-    .then(data => {
+      })
+      .then(res => res.json())
+      .then(data => {
         if (data.succes) {
-            sessijava-script.setItem("prenom", data.prenom);
-            prenomUtilisateur = data.prenom;
-            emailUtilisateur = email;
-            envoyerCodeVerification();
+          // Sauvegarde le prénom dans le sessionStorage pour l'afficher sur la page abonné
+          sessionStorage.setItem("prenom", data.prenom);
+          prenomUtilisateur = data.prenom;
+          emailUtilisateur = email;
+          envoyerCodeVerification();
         } else {
-            alert("Email ou mot de passe incorrect.");
+          alert("Email ou mot de passe incorrect.");
         }
-    });
-}
+      });
+    }
 
 
     // ---- NOUVELLES FONCTIONS POUR LA VÉRIFICATION PAR CODE ----
