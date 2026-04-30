@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Neufmoutiers Bus - Réinitialisation mot de passe</title>
+  <style>
+    /* Fond bleu dégradé identique à la page de connexion pour cohérence visuelle */
+    body { 
+      font-family: Arial, sans-serif; 
+      background: linear-gradient(135deg, #1548D4 0%, #0a2d7a 100%); 
+      margin: 0; padding: 0; 
+      display: flex; align-items: center; justify-content: center; 
+      min-height: 100vh; 
+    }
+    /* Boîte blanche centrale qui contient tout le contenu */
+    .box { 
+      background: white; 
+      padding: 40px; 
+      border-radius: 15px; 
+      width: 400px; 
+      text-align: center; 
+      box-shadow: 0 10px 40px rgba(0,0,0,0.3); 
+    }
+    /* Icône affichée en haut de chaque étape */
+    .icone { font-size: 50px; margin-bottom: 10px; }
+    /* Titre principal de chaque étape en bleu */
+    h1 { color: #1548D4; font-size: 22px; margin: 0 0 8px 0; }
+    /* Texte explicatif sous le titre, en gris et plus petit */
+    .sous-titre { color: #666; font-size: 13px; margin-bottom: 28px; line-height: 1.5; }
+
+    /* Étapes : toutes cachées par défaut, seule celle avec la classe "active" est visible */
+    .etape { display: none; }
+    .etape.active { display: block; }
+
+    /* Champs de saisie : style identique à la page de connexion */
+    input { 
+      width: 100%; padding: 12px; margin-bottom: 15px; 
+      border: 2px solid #ddd; border-radius: 8px; 
+      font-size: 14px; box-sizing: border-box; 
+    }
+    /* Bordure bleue quand le champ est sélectionné (focus) */
+    input:focus { border-color: #1548D4; outline: none; }
+
+    /* Style commun à tous les boutons */
+    button { 
+      width: 100%; padding: 14px; margin-bottom: 10px; 
+      border: none; border-radius: 8px; 
+      font-size: 15px; font-weight: bold; cursor: pointer; 
+    }
+    /* Bouton principal bleu (action principale de chaque étape) */
+    .btn-primary { background: #1548D4; color: white; }
+    .btn-primary:hover { background: #0a2d7a; }
+    /* Bouton retour gris (action secondaire pour revenir en arrière) */
+    .btn-retour { 
+      background: #f5f5f5; color: #333; 
+      border: 2px solid #ddd; font-size: 14px; 
+    }
+    .btn-retour:hover { background: #e8e8e8; }
+
+    /* Indicateur d'étapes : 3 points qui montrent la progression (gris = à venir, bleu = en cours, vert = terminé) */
+    .steps { 
+      display: flex; justify-content: center; gap: 8px; 
+      margin-bottom: 24px; 
+    }
+    /* Point de base : petit cercle gris */
+    .step-dot { 
+      width: 10px; height: 10px; border-radius: 50%; 
+      background: #ddd; transition: background 0.3s; 
+    }
+    /* Point bleu = étape en cours */
+    .step-dot.active { background: #1548D4; }
+    /* Point vert = étape terminée */
+    .step-dot.done { background: #10b981; }
+
+    /* --- STYLES POUR LE MESSAGE DE SUCCÈS (étape 3) --- */
+    /* Grande icône verte affichée quand le mot de passe est réinitialisé */
+    .succes-icone { font-size: 60px; margin-bottom: 15px; }
+    /* Titre de succès en vert */
+    .succes-titre { color: #10b981; font-size: 20px; font-weight: bold; margin-bottom: 10px; }
+    /* Texte explicatif sous le titre de succès */
+    .succes-texte { color: #666; font-size: 14px; margin-bottom: 25px; }
+
+    /* --- STYLES POUR LES RÈGLES DU MOT DE PASSE (étape 2) --- */
+    /* Conteneur de la liste des règles, aligné à gauche */
+    .regles { text-align: left; margin-bottom: 15px; }
+    /* Chaque règle est grise par défaut */
+    .regle { font-size: 12px; color: #999; margin-bottom: 4px; }
+    /* La règle devient verte quand elle est respectée (classe "ok" ajoutée par JS) */
+    .regle.ok { color: #10b981; }
+
+    /* Barre de force du mot de passe : se remplit et change de couleur selon la force */
+    .force-barre { height: 5px; border-radius: 3px; background: #eee; margin-bottom: 15px; }
+    /* Partie colorée de la barre, sa largeur et couleur sont mises à jour par JS */
+    .force-fill { height: 100%; border-radius: 3px; width: 0%; transition: width 0.3s, background 0.3s; }
+  </style>
+</head>
+<body>
+  <div class="box">
+
+    <!-- Indicateur de progression : 3 points représentant les 3 étapes de la réinitialisation -->
+    <div class="steps">
+      <div class="step-dot active" id="dot1"></div> <!-- Point 1 : actif au démarrage -->
+      <div class="step-dot" id="dot2"></div>         <!-- Point 2 : en attente -->
+      <div class="step-dot" id="dot3"></div>         <!-- Point 3 : en attente -->
+    </div>
+
+    <!-- ===== ÉTAPE 1 : Saisie de l'email ===== -->
+    <!-- Visible au démarrage grâce à la classe "active" -->
+    <div class="etape active" id="etape1">
+      <div class="icone">🔑</div>
+      <h1>Mot de passe oublié ?</h1>
+      <p class="sous-titre">Entrez votre adresse email. Nous vous enverrons un lien de réinitialisation.</p>
+      <!-- Champ email pour identifier l'utilisateur -->
+      <input type="email" id="email-reinit" placeholder="Adresse e-mail" required>
+      <!-- Bouton qui appelle envoyerEmail() : simule l'envoi du lien et passe à l'étape 2 -->
+      <button class="btn-primary" onclick="envoyerEmail()">Envoyer le lien</button>
+      <!-- Bouton retour vers la page de connexion -->
+      <button class="btn-retour" onclick="window.location.href='index.html'">← Retour à la connexion</button>
+    </div>
+
+    <!-- ===== ÉTAPE 2 : Saisie du nouveau mot de passe ===== -->
+    <!-- Cachée par défaut, affichée par JS après l'étape 1 -->
+    <div class="etape" id="etape2">
+      <div class="icone">🔐</div>
+      <h1>Nouveau mot de passe</h1>
+      <p class="sous-titre">Choisissez un nouveau mot de passe sécurisé.</p>
+
+      <!-- Champ nouveau mot de passe : à chaque frappe, verifierForce() met à jour la barre et les règles -->
+      <input type="password" id="nouveau-mdp" placeholder="Nouveau mot de passe" oninput="verifierForce(this.value)">
+      
+      <!-- Barre de force du mot de passe : rouge = faible, orange = moyen, vert = fort -->
+      <div class="force-barre"><div class="force-fill" id="force-fill"></div></div>
+
+      <!-- Liste des règles de sécurité : passent au vert quand elles sont respectées -->
+      <div class="regles">
+        <div class="regle" id="regle-longueur">• Au moins 8 caractères</div>
+        <div class="regle" id="regle-majuscule">• Une lettre majuscule</div>
+        <div class="regle" id="regle-chiffre">• Un chiffre</div>
+      </div>
+
+      <!-- Champ confirmation : doit correspondre au champ nouveau-mdp -->
+      <input type="password" id="confirm-mdp" placeholder="Confirmer le mot de passe">
+      <!-- Bouton qui appelle validerMdp() : vérifie les règles et passe à l'étape 3 si tout est bon -->
+      <button class="btn-primary" onclick="validerMdp()">Réinitialiser</button>
+    </div>
+
+    <!-- ===== ÉTAPE 3 : Confirmation de succès ===== -->
+    <!-- Cachée par défaut, affichée par JS après validation du nouveau mot de passe -->
+    <div class="etape" id="etape3">
+      <div class="succes-icone">✅</div>
+      <div class="succes-titre">Mot de passe réinitialisé !</div>
+      <!-- Message informatif pour l'utilisateur -->
+      <p class="succes-texte">Votre mot de passe a bien été mis à jour. Vous pouvez maintenant vous connecter avec votre nouveau mot de passe.</p>
+      <!-- Bouton pour retourner à la page de connexion -->
+      <button class="btn-primary" onclick="window.location.href='index.html'">Se connecter</button>
+    </div>
+
+  </div>
+
+  <script>
+    // Fonction générique pour passer d'une étape à une autre
+    // n = numéro de l'étape cible (1, 2 ou 3)
+    function allerEtape(n) {
+      // Parcourt toutes les étapes et active uniquement celle dont l'index correspond à n-1
+      document.querySelectorAll('.etape').forEach((e, i) => {
+        e.classList.toggle('active', i === n - 1);
+      });
+      // Met à jour les points indicateurs : vert pour les étapes passées, bleu pour l'étape en cours
+      document.querySelectorAll('.step-dot').forEach((d, i) => {
+        d.classList.remove('active', 'done');
+        if (i < n - 1) d.classList.add('done');   // Étape terminée : point vert
+        if (i === n - 1) d.classList.add('active'); // Étape en cours : point bleu
+      });
+    }
+
+    // Fonction appelée à l'étape 1 quand l'utilisateur clique sur "Envoyer le lien"
+    function envoyerEmail() {
+      var email = document.getElementById('email-reinit').value.trim();
+      // Vérifie que le champ email n'est pas vide
+      if (!email) { alert('Veuillez saisir votre adresse email.'); return; }
+      // Statique : simule l'envoi d'un email de réinitialisation (pas de vrai envoi ici)
+      alert('Un lien de réinitialisation a été envoyé à : ' + email);
+      // Passe à l'étape 2 (saisie du nouveau mot de passe)
+      allerEtape(2);
+    }
+
+    // Fonction appelée à chaque frappe dans le champ "nouveau mot de passe"
+    // Vérifie les règles de sécurité et met à jour la barre de force en temps réel
+    function verifierForce(mdp) {
+      // Vérifie chaque règle de sécurité avec une expression régulière ou une condition
+      var longueur = mdp.length >= 8;         // Au moins 8 caractères
+      var majuscule = /[A-Z]/.test(mdp);      // Au moins une lettre majuscule
+      var chiffre = /[0-9]/.test(mdp);        // Au moins un chiffre
+
+      // Compte le nombre de règles respectées pour calculer le score (0, 1, 2 ou 3)
+      var score = [longueur, majuscule, chiffre].filter(Boolean).length;
+
+      // Ajoute ou retire la classe "ok" sur chaque règle selon qu'elle est respectée ou non
+      document.getElementById('regle-longueur').classList.toggle('ok', longueur);
+      document.getElementById('regle-majuscule').classList.toggle('ok', majuscule);
+      document.getElementById('regle-chiffre').classList.toggle('ok', chiffre);
+
+      // Met à jour la barre de force : largeur proportionnelle au score, couleur selon la force
+      var fill = document.getElementById('force-fill');
+      var couleurs = ['#ef4444', '#f59e0b', '#10b981']; // Rouge = faible, orange = moyen, vert = fort
+      fill.style.width = (score * 33) + '%';             // 33% par règle respectée
+      fill.style.background = couleurs[score - 1] || '#eee'; // Couleur selon le score
+    }
+
+    // Fonction appelée quand l'utilisateur clique sur "Réinitialiser"
+    function validerMdp() {
+      var mdp = document.getElementById('nouveau-mdp').value;
+      var confirm = document.getElementById('confirm-mdp').value;
+      // Vérifie que le mot de passe respecte la longueur minimale
+      if (mdp.length < 8) { alert('Le mot de passe doit contenir au moins 8 caractères.'); return; }
+      // Vérifie que les deux champs correspondent
+      if (mdp !== confirm) { alert('Les mots de passe ne correspondent pas.'); return; }
+      // Tout est valide : passe à l'étape 3 (confirmation de succès)
+      allerEtape(3);
+    }
+  </script>
+</body>
+</html>
