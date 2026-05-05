@@ -45,7 +45,7 @@
     /* Conteneur mot de passe avec œil */
     .password-container {
       position: relative;
-      margin-bottom: 8px;
+      margin-bottom: 15px;
     }
     
     .password-container input {
@@ -62,19 +62,6 @@
       font-size: 18px;
       user-select: none;
     }
-
-    /* Lien mot de passe oublié : affiché en petit à droite sous le champ mot de passe */
-    .mdp-oublie {
-      display: block;
-      text-align: right;
-      font-size: 12px;
-      color: #1548D4;
-      text-decoration: none;
-      margin-bottom: 15px;
-      margin-top: 4px;
-    }
-    /* Soulignement au survol pour indiquer que c'est cliquable */
-    .mdp-oublie:hover { text-decoration: underline; }
     
     /* Boutons */
     button { 
@@ -184,9 +171,6 @@
           <input type="password" id="motdepasse" placeholder="Mot de passe" required>
           <span class="eye-icon" onclick="afficherMotDePasse()">👁️</span>
         </div>
-
-        <!-- Lien mot de passe oublié : redirige vers la page de réinitialisation -->
-        <a href="reinitialisation.html" class="mdp-oublie">Mot de passe oublié ?</a>
         
         <button type="submit" class="btn-abonne">Se connecter (Espace Abonné)</button>
       </form>
@@ -201,6 +185,10 @@
 
       <p style="font-size: 12px; color: #999; margin-top: 20px;">
         Pas encore d'abonnement ? <a href="Abonnements.html" style="color: #1548D4;">Souscrire à un abonnement</a>
+      </p>
+      <!-- Lien vers la page de réinitialisation du mot de passe, affiché sous le lien d'abonnement -->
+      <p style="font-size: 12px; color: #999; margin-top: 8px;">
+        <a href="réinitialisation.html" style="color: #1548D4;">🔑 Mot de passe oublié ?</a> <!-- Lien cliquable vers réinitialisation.html (avec accent sur le é) -->
       </p>
 
     </div><!-- fin etape-connexion -->
@@ -241,6 +229,7 @@
 
   <script>
 
+  
     // =====================================================
     var EMAILJS_PUBLIC_KEY  = "WseFqUbinxUUVys9A";  // Clé publique dans Paramètres > Général
     var EMAILJS_SERVICE_ID  = "service_9btx3mh";    // ID du service email créé dans Email Services
@@ -261,7 +250,16 @@
     var prenomUtilisateur = "";
 
     // Variable qui mémorise l'email de l'utilisateur connecté
-    var emailUtilisateur = ""; 
+    var emailUtilisateur = "";
+
+    // Liste des utilisateurs autorisés avec leur email, mot de passe et prénom
+    const utilisateurs = {
+      "shabipraba@gmail.com":             { motdepasse: "bus_9moutiers", prenom: "Shabi" },
+      "martin.ferreira2006@gmail.com":    { motdepasse: "projet2025", prenom: "Martin" },
+      "alexandrerousseau0911@gmail.com":  { motdepasse: "bus_9moutiers", prenom: "Alexandre" },
+      "aminekhorsi75@gmail.com":          { motdepasse: "Ak75019+", prenom: "Amine" },
+      "professeur75019@gmail.com":        { motdepasse: "professeur19", prenom: "Professeur" },
+    };
 
     // Fonction pour afficher/masquer le mot de passe
     function afficherMotDePasse() {
@@ -280,27 +278,28 @@
     // Fonction de connexion abonné
     function seConnecter(event) {
       event.preventDefault();
+      // Récupère l'email saisi (en minuscules pour éviter les erreurs de casse)
       var email = document.querySelector('input[type="email"]').value.trim().toLowerCase();
+      // Récupère le mot de passe saisi
       var motdepasse = document.getElementById("motdepasse").value;
-      fetch('connexion.php', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email, motdepasse: motdepasse })
-      })
-      .then(res => res.json())
-      .then(data => {
-        if (data.succes) {
-          // Sauvegarde le prénom dans le sessionStorage pour l'afficher sur la page abonné
-          sessionStorage.setItem("prenom", data.prenom);
-          prenomUtilisateur = data.prenom;
-          emailUtilisateur = email;
-          envoyerCodeVerification();
-        } else {
-          alert("Email ou mot de passe incorrect.");
-        }
-      });
-    }
 
+      // Vérifie si l'email existe dans la liste et si le mot de passe est correct
+      if (utilisateurs[email] && utilisateurs[email].motdepasse === motdepasse) {
+        // Sauvegarde le prénom dans le sessionStorage pour l'utiliser sur la page suivante
+        sessionStorage.setItem("prenom", utilisateurs[email].prenom);
+
+        // Mémorise le prénom et l'email pour l'étape de vérification
+        prenomUtilisateur = utilisateurs[email].prenom;
+        emailUtilisateur = email;
+
+        // Lance l'envoi du code de vérification par email
+        envoyerCodeVerification();
+
+      } else {
+        // Affiche une erreur si email ou mot de passe incorrect
+        alert("Email ou mot de passe incorrect. Accès refusé.");
+      }
+    }
 
     // ---- NOUVELLES FONCTIONS POUR LA VÉRIFICATION PAR CODE ----
 
